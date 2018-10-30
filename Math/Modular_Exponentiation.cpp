@@ -56,6 +56,8 @@ ll power(ll x, ll y, ll p)
 	return res;
 }
 
+//for modular inverse, call power(x, p-2, p)
+
 void solve()
 {
 	
