@@ -9,6 +9,8 @@
 #define lol         1000000007
 #define endl        '\n'
 #define rep(i,a,b)  for(int i=a;i<b;i++)
+#define F           first
+#define S           second
 #define SIZE        1000005
 using namespace std;
 
@@ -25,12 +27,12 @@ ll dist[SIZE];
 int vis[SIZE];
 int n, m;
 int par[SIZE];
+// vi tree[SIZE];          // Dijkstra Tree
 
 
 void dijkstra(int source)
 {
     dist[source] = 0;
-    multiset<pair<ll,ll>> pqueue;       //priority queue stores vertices
     priority_queue< pair<ll, ll>, vector<pair<ll, ll>>, greater<pair<ll,ll>> > Q;
     Q.push(mp(0,source));
     while(!Q.empty())
@@ -40,6 +42,7 @@ void dijkstra(int source)
         ll x = p.second;
         if(!vis[x])
         {
+            // if(x != source) tree[x].pb(par[x]), tree[par[x]].pb(x);      // Dijkstra Tree
             vis[x] = 1;
             rep(i,0,arr[x].size())
             {
