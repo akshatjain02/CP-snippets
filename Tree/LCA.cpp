@@ -33,29 +33,59 @@ ll gcd(ll a, ll b) { return b ? gcd(b, a%b) : a; }
 vi adj[SIZE];
 int par[SIZE][LOGSIZE];		//stores 2^j th ancestor of i
 int depth[SIZE] = {0};
+int lcatree[4*SIZE+5];
 
 void preprocess(int v, int p)
 {
 	par[v][0] = p;
-	if(p+1) depth[v] = depth[p] + 1;
-	rep(i,1,LOGSIZE) if(par[v][i-1]+1) par[v][i] = par[par[v][i-1]][i-1];
-	for(auto u : adj[v]) if(p-u) preprocess(u,v);
+	if(p) depth[v] = depth[p] + 1;
+	rep(i,1,LOGSIZE) if(par[v][i-1]) par[v][i] = par[par[v][i-1]][i-1];
+	for(int u : adj[v]) if(p-u) preprocess(u,v);
 }
 
 int lca(int v, int u)
 {
 	if(depth[v]<depth[u]) swap(u,v);
-	rev(i,0,LOGSIZE) if((par[v][i]+1) && depth[par[v][i]]>=depth[u]) v = par[v][i];
+	rev(i,0,LOGSIZE) if(par[v][i] && depth[par[v][i]]>=depth[u]) v = par[v][i];
 	if(v == u) return v;
 	rev(i,0,LOGSIZE) if(par[v][i] - par[u][i]) v = par[v][i], u = par[u][i];
 	return par[v][0];
+}
+
+void buildLcaTree(int node, int start, int end)
+{
+	if(start>end) return;
+	if(start==end) lcatree[node] = start;
+	else
+	{
+		int mid = (start+end)/2;
+		buildLcaTree(2*node, start, mid);
+		buildLcaTree(2*node+1, mid+1, end);
+
+		lcatree[node] = lca(lcatree[2*node], lcatree[2*node+1]);
+	}
+}
+
+int lcaquery(int node, int start, int end, int l, int r)
+{
+	if(r<start || end<l) return -1;
+	if(l<=start && end<=r) return lcatree[node];
+
+	int mid = (start+end)/2;
+	int p1 = lcaquery(2*node, start, mid, l, r);
+	int p2 = lcaquery(2*node+1, mid+1, end, l, r);
+
+	if(p1 == -1) return p2;
+	if(p2 == -1) return p1;
+
+	return lca(p1, p2);
 }
 
 void solve()
 {
 	rep(i,0,SIZE)
 	{
-		rep(j,0,LOGSIZE) par[i][j] = -1;
+		rep(j,0,LOGSIZE) par[i][j] = 0;
 		depth[i] = 0;
 	}
 	int n;
@@ -64,20 +94,21 @@ void solve()
 	{
 		int x, y;
 		cin>>x>>y;
-		x--; y--;
+		// x++; y++;		// x and y should be 1 indexed
 		adj[x].pb(y);
 		adj[y].pb(x);
 	}
-	int root = 0;
-	preprocess(root, -1);
+	int root = 1;
+	preprocess(root, 0);
+	buildLcaTree(1,1,n);
 	int q;
 	cin>>q;
 	while(q--)
 	{
 		int u, v;
 		cin>>u>>v;
-		u--; v--;
-		cout<<lca(u,v)+1<<endl;
+		// u--; v--;		// u and v should be 1 indexed
+		cout<<lcaquery(1,1,n,u,v)<<endl;
 	}
 
 
